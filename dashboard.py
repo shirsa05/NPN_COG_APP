@@ -1,7 +1,6 @@
 import pandas as pd
 import plotly.express as px
 from collections import Counter
-from predictor import preprocess_text # Import the preprocessing function
 
 def create_sentiment_distribution_plot(df):
     """Creates an interactive bar chart of sentiment counts."""
