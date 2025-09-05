@@ -6,7 +6,10 @@ import pandas as pd
 def get_db_connection():
     """Establishes a connection to the remote Postgres database."""
     try:
-        conn = psycopg2.connect(**st.secrets["database"])
+        # CORRECTED: Extract the single connection string from secrets
+        connection_string = st.secrets["database"]["db_url"]
+        # Pass the connection string as a single argument
+        conn = psycopg2.connect(connection_string)
         return conn
     except psycopg2.OperationalError as e:
         st.error(f"❌ Error connecting to the database: {e}")
