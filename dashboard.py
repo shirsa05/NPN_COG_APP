@@ -22,9 +22,11 @@ try:
     nltk.data.find('corpora/stopwords')
     nltk.data.find('tokenizers/punkt')
     nltk.data.find('corpora/wordnet')
+    nltk.data.find('corpora/punkt_tab')
 except LookupError:
     nltk.download('stopwords')
     nltk.download('punkt')
+    nltk.download('punkt_tab')
     nltk.download('wordnet')
 
 # --- NEW: Internal preprocessing function ---
