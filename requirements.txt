@@ -5,3 +5,4 @@ nltk
 plotly 
 joblib
 requests
+psycopg2-binary
