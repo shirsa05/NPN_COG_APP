@@ -43,9 +43,9 @@ with tab1:
 
                 # Display result
                 if prediction == "Happy":
-                    st.success(f"Prediction: {prediction} (Confidence: {confidence:.2%})")
+                    st.success(f"Prediction: {prediction}")
                 else:
-                    st.error(f"Prediction: {prediction} (Confidence: {confidence:.2%})")
+                    st.error(f"Prediction: {prediction}")
 
                 # Save to database
                 label_for_db = 1 if prediction == "Happy" else 0
