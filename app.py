@@ -165,7 +165,7 @@ with tab4:
                     if performance == "Good":
                         st.success(f"Performance for '{aspect_word}' is **Good**, Performance score of '{aspect_word}': {score:.2f}%.")
                     else:
-                        st.error(f"Performance for '{aspect_word}' is **Bad** with a score of {score:.2f}%. This may need improvement. Performance score of '{aspect_word}': {score:.2f}%.")
+                        st.error(f"Performance for '{aspect_word}' is **Bad**. This may need improvement. Performance score of '{aspect_word}': {score:.2f}%.")
         else:
             st.warning("Please enter an aspect to analyze.")
 
