@@ -30,16 +30,16 @@ except LookupError:
     nltk.download('wordnet')
 
 # --- NEW: Internal preprocessing function ---
-def _preprocess_for_word_count(text):
-    """A private preprocessing function for the dashboard's use."""
-    lemmatizer = WordNetLemmatizer()
-    stop_words = set(stopwords.words('english'))
+# def _preprocess_for_word_count(text):
+#     """A private preprocessing function for the dashboard's use."""
+#     lemmatizer = WordNetLemmatizer()
+#     stop_words = set(stopwords.words('english'))
     
-    text = re.sub(r'[^a-zA-Z\s]', '', text, re.I|re.A)
-    text = text.lower()
-    tokens = word_tokenize(text)
-    processed_tokens = [lemmatizer.lemmatize(word) for word in tokens if word not in stop_words and len(word) > 1]
-    return " ".join(processed_tokens)
+#     text = re.sub(r'[^a-zA-Z\s]', '', text, re.I|re.A)
+#     text = text.lower()
+#     tokens = word_tokenize(text)
+#     processed_tokens = [lemmatizer.lemmatize(word) for word in tokens if word not in stop_words and len(word) > 1]
+#     return " ".join(processed_tokens)
 
 
 def create_sentiment_distribution_plot(df):
@@ -53,32 +53,32 @@ def create_sentiment_distribution_plot(df):
                    title="Count of Happy vs. Not Happy Reviews")
     return fig
 
-# --- UPDATED: create_common_words_plot function ---
-def create_common_words_plot(df, sentiment_label, n=15):
-    """Creates an interactive bar chart of the most common words for a given sentiment."""
-    sentiment_map = {1: 'Happy', 0: 'Not Happy'}
-    color_map = {1: 'green', 0: 'red'}
+# # --- UPDATED: create_common_words_plot function ---
+# def create_common_words_plot(df, sentiment_label, n=15):
+#     """Creates an interactive bar chart of the most common words for a given sentiment."""
+#     sentiment_map = {1: 'Happy', 0: 'Not Happy'}
+#     color_map = {1: 'green', 0: 'red'}
     
-    corpus = df[df['predicted_label'] == sentiment_label]['Description']
-    if corpus.empty:
-        return px.bar(title=f"No '{sentiment_map[sentiment_label]}' reviews to analyze")
+#     corpus = df[df['predicted_label'] == sentiment_label]['Description']
+#     if corpus.empty:
+#         return px.bar(title=f"No '{sentiment_map[sentiment_label]}' reviews to analyze")
 
-    # Use the new internal preprocessing function
-    all_text = " ".join(str(text) for text in corpus)
-    processed_text = _preprocess_for_word_count(all_text)
+#     # Use the new internal preprocessing function
+#     all_text = " ".join(str(text) for text in corpus)
+#     processed_text = _preprocess_for_word_count(all_text)
     
-    words = processed_text.split()
-    if not words:
-        return px.bar(title=f"No common words found for '{sentiment_map[sentiment_label]}' reviews")
+#     words = processed_text.split()
+#     if not words:
+#         return px.bar(title=f"No common words found for '{sentiment_map[sentiment_label]}' reviews")
 
-    word_counts = Counter(words)
-    top_words = pd.DataFrame(word_counts.most_common(n), columns=['Word', 'Count'])
+#     word_counts = Counter(words)
+#     top_words = pd.DataFrame(word_counts.most_common(n), columns=['Word', 'Count'])
     
-    fig = px.bar(top_words, x='Count', y='Word', orientation='h',
-                   title=f"Top Words in {sentiment_map[sentiment_label]} Reviews",
-                   color_discrete_sequence=[color_map[sentiment_label]])
-    fig.update_yaxes(autorange="reversed")
-    return fig
+#     fig = px.bar(top_words, x='Count', y='Word', orientation='h',
+#                    title=f"Top Words in {sentiment_map[sentiment_label]} Reviews",
+#                    color_discrete_sequence=[color_map[sentiment_label]])
+#     fig.update_yaxes(autorange="reversed")
+#     return fig
 
 
 def create_time_series_plot(df):

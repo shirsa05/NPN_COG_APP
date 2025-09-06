@@ -3,6 +3,7 @@ import streamlit as st
 
 # IMPORTANT: Replace this placeholder with the actual URL from your Railway deployment.
 API_URL = "https://ml-sentimentanalysis-production.up.railway.app/predict"
+API_URL_2 = "https://hotel-review-analyzer.onrender.com/analyze"
 
 def predict_sentiment_api(review_text: str):
     """
@@ -53,3 +54,16 @@ def predict_sentiment_api(review_text: str):
         # Display an informative error in the Streamlit app
         st.error(f"API Connection Error: Could not connect to the model endpoint. Please ensure the API is running. Details: {e}")
         return None
+
+# This function for aspect analysis remains the same
+def analyze_aspect_api(aspect_word: str):
+    """Calls the deployed API to analyze sentiment for a specific aspect."""
+
+    params = {"essential": aspect_word.lower().strip()}
+    try:
+        response = requests.get(API_URL_2, params=params, timeout=30)
+        response.raise_for_status()
+        return response.json()
+        
+    except requests.exceptions.RequestException as e:
+        return {"error": f"API call failed: {e}"}

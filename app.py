@@ -4,8 +4,8 @@ from datetime import datetime
 
 # Import from your custom modules
 from database import setup_database, insert_single_review, insert_bulk_reviews, fetch_all_reviews
-from dashboard import create_sentiment_distribution_plot, create_common_words_plot, create_time_series_plot
-from api_client import predict_sentiment_api
+from dashboard import create_sentiment_distribution_plot, create_time_series_plot
+from api_client import predict_sentiment_api, analyze_aspect_api
 
 # --- 1. SETUP ---
 st.set_page_config(page_title="Hotel Sentiment Analyzer", layout="wide")
@@ -37,7 +37,7 @@ st.title("🏨 Hotel Review Sentiment Analyzer")
 st.markdown("This application analyzes hotel reviews to determine sentiment by calling a deployed machine learning API.")
 
 # Create the main tabs for the application
-tab1, tab2, tab3 = st.tabs(["Single Review Analysis", "Bulk CSV Upload", "Overall Dashboard"])
+tab1, tab2, tab3, tab4 = st.tabs(["Single Review Analysis", "Bulk CSV Upload", "Overall Dashboard", "Aspect Analysis"])
 
 
 # --- TAB 1: SINGLE REVIEW ANALYSIS ---
@@ -120,15 +120,6 @@ with tab2:
                     st.markdown("---")
                     st.header("Dashboard for Uploaded File")
                     st.plotly_chart(create_sentiment_distribution_plot(df_upload), use_container_width=True)
-                    
-                    col1, col2 = st.columns(2)
-                    with col1:
-                        fig_happy = create_common_words_plot(df_upload, 1)
-                        st.plotly_chart(fig_happy, use_container_width=True)
-                    with col2:
-                        fig_not_happy = create_common_words_plot(df_upload, 0)
-                        st.plotly_chart(fig_not_happy, use_container_width=True)
-
             else:
                 st.error("Error: The CSV file must contain 'Time_Stamp' and 'Description' columns.")
         except Exception as e:
@@ -152,4 +143,29 @@ with tab3:
                     st.warning("Could not generate time-series plot. Ensure 'timestamp' column has valid dates.")
             else:
                 st.warning("No reviews found in the database yet. Analyze some reviews first!")
+
+# --- NEW TAB 4: ASPECT ANALYSIS ---
+with tab4:
+    st.header("Analyze Key Aspects")
+    st.info("Enter a single word (e.g., 'staff', 'bed', 'location') to see its performance score based on the model's knowledge.")
+
+    aspect_word = st.text_input("Enter aspect to analyze:", key="aspect_input")
+
+    if st.button("Analyze Aspect", key="aspect_button"):
+        if aspect_word:
+            with st.spinner(f"Analyzing aspect: '{aspect_word}'..."):
+                aspect_result = analyze_aspect_api(aspect_word)
+                
+                if "error" in aspect_result:
+                    st.error(aspect_result["error"])
+                elif "performance_score" in aspect_result:
+                    performance = aspect_result["performance_score"][0]
+                    score = aspect_result["performance_score"][1]
+                    
+                    if performance == "Good":
+                        st.success(f"Performance for '{aspect_word}' is **Good**, Performance score of '{aspect_word}': {score:.2f}%.")
+                    else:
+                        st.error(f"Performance for '{aspect_word}' is **Bad** with a score of {score:.2f}%. This may need improvement. Performance score of '{aspect_word}': {score:.2f}%.")
+        else:
+            st.warning("Please enter an aspect to analyze.")
 
