@@ -169,6 +169,7 @@ with tab3:
 #         else:
 #             st.warning("Please enter an aspect to analyze.")
 
+
 # --- TAB 4: ASPECT ANALYSIS (REWRITTEN) ---
 with tab4:
     st.header("Analyze Key Aspects from Your Database")
