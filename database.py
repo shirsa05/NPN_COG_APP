@@ -83,3 +83,25 @@ def fetch_all_reviews():
             return None
         finally:
             conn.close()
+            
+# --- NEW FUNCTION FOR ASPECT ANALYSIS ---
+def fetch_reviews_by_keyword(keyword: str):
+    """
+    Fetches reviews from the database that contain a specific keyword.
+    The search is case-insensitive.
+    """
+    conn = get_db_connection()
+    if conn:
+        try:
+            # Use ILIKE for case-insensitive pattern matching in Postgres
+            # The '%' are wildcards, so it finds the keyword anywhere in the text
+            query = "SELECT predicted_label FROM reviews WHERE review_text ILIKE %s"
+            # Pass the keyword as a parameter to prevent SQL injection
+            df = pd.read_sql_query(query, conn, params=(f'%{keyword}%',))
+            return df
+        except Exception as e:
+            st.error(f"Failed to fetch data by keyword: {e}")
+            return pd.DataFrame() # Return empty DataFrame on error
+        finally:
+            conn.close()
+    return pd.DataFrame()

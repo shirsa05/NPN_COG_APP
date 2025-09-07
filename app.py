@@ -3,9 +3,9 @@ import pandas as pd
 from datetime import datetime
 
 # Import from your custom modules
-from database import setup_database, insert_single_review, insert_bulk_reviews, fetch_all_reviews
+from database import setup_database, insert_single_review, insert_bulk_reviews, fetch_all_reviews, fetch_reviews_by_keyword
 from dashboard import create_sentiment_distribution_plot, create_time_series_plot
-from api_client import predict_sentiment_api, analyze_aspect_api
+from api_client import predict_sentiment_api
 
 # --- 1. SETUP ---
 st.set_page_config(page_title="Hotel Sentiment Analyzer", layout="wide")
@@ -144,28 +144,68 @@ with tab3:
             else:
                 st.warning("No reviews found in the database yet. Analyze some reviews first!")
 
-# --- NEW TAB 4: ASPECT ANALYSIS ---
-with tab4:
-    st.header("Analyze Key Aspects")
-    st.info("Enter a single word (e.g., 'staff', 'bed', 'location') to see its performance score based on the model's knowledge.")
+# # --- NEW TAB 4: ASPECT ANALYSIS ---
+# with tab4:
+#     st.header("Analyze Key Aspects")
+#     st.info("Enter a single word (e.g., 'staff', 'bed', 'location') to see its performance score based on the model's knowledge.")
 
-    aspect_word = st.text_input("Enter aspect to analyze:", key="aspect_input")
+#     aspect_word = st.text_input("Enter aspect to analyze:", key="aspect_input")
+
+#     if st.button("Analyze Aspect", key="aspect_button"):
+#         if aspect_word:
+#             with st.spinner(f"Analyzing aspect: '{aspect_word}'..."):
+#                 aspect_result = analyze_aspect_api(aspect_word)
+                
+#                 if "error" in aspect_result:
+#                     st.error(aspect_result["error"])
+#                 elif "performance_score" in aspect_result:
+#                     performance = aspect_result["performance_score"][0]
+#                     score = aspect_result["performance_score"][1]
+                    
+#                     if performance == "Good":
+#                         st.success(f"Performance for '{aspect_word}' is **Good**, Performance score of '{aspect_word}': {score:.2f}%.")
+#                     else:
+#                         st.error(f"Performance for '{aspect_word}' is **Bad**. This may need improvement. Performance score of '{aspect_word}': {score:.2f}%.")
+#         else:
+#             st.warning("Please enter an aspect to analyze.")
+
+# --- TAB 4: ASPECT ANALYSIS (REWRITTEN) ---
+with tab4:
+    st.header("Analyze Key Aspects from Your Database")
+    st.info("Enter a single word (e.g., 'staff', 'bed', 'location') to see its performance score based on all reviews stored in your database.")
+
+    aspect_word = st.text_input("Enter aspect to analyze:", key="aspect_input").lower().strip()
 
     if st.button("Analyze Aspect", key="aspect_button"):
         if aspect_word:
-            with st.spinner(f"Analyzing aspect: '{aspect_word}'..."):
-                aspect_result = analyze_aspect_api(aspect_word)
+            with st.spinner(f"Searching database for reviews about '{aspect_word}'..."):
+                reviews_df = fetch_reviews_by_keyword(aspect_word)
+
+            if not reviews_df.empty:
+                total_mentions = len(reviews_df)
+                happy_mentions = (reviews_df['predicted_label'] == 1).sum()
+                not_happy_mentions = (reviews_df['predicted_label'] == 0).sum()
                 
-                if "error" in aspect_result:
-                    st.error(aspect_result["error"])
-                elif "performance_score" in aspect_result:
-                    performance = aspect_result["performance_score"][0]
-                    score = aspect_result["performance_score"][1]
-                    
-                    if performance == "Good":
-                        st.success(f"Performance for '{aspect_word}' is **Good**, Performance score of '{aspect_word}': {score:.2f}%.")
-                    else:
-                        st.error(f"Performance for '{aspect_word}' is **Bad**. This may need improvement. Performance score of '{aspect_word}': {score:.2f}%.")
+                # Calculate the performance score
+                performance_score = (happy_mentions / total_mentions) * 100 if total_mentions > 0 else 0
+
+                st.subheader(f"Results for '{aspect_word}'")
+                
+                col1, col2, col3 = st.columns(3)
+                col1.metric("Total Mentions", f"{total_mentions}")
+                col2.metric("Happy Mentions", f"{happy_mentions}")
+                col3.metric("Not Happy Mentions", f"{not_happy_mentions}")
+
+                # Display the performance score with a progress bar and interpretation
+                st.progress(int(performance_score))
+                
+                if performance_score >= 75:
+                    st.success(f"**Performance is Good with a score of {performance_score:.2f}%**")
+                elif performance_score >= 50:
+                    st.warning(f"**Performance is Neutral with a score of {performance_score:.2f}%**")
+                else:
+                    st.error(f"**Performance is Bad with a score of {performance_score:.2f}%. This may need improvement.**")
+            else:
+                st.warning(f"No reviews found in the database containing the word '{aspect_word}'.")
         else:
             st.warning("Please enter an aspect to analyze.")
-
