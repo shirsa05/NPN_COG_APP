@@ -11,7 +11,7 @@ except AttributeError:
 else:
     ssl._create_default_https_context = _create_unverified_https_context
 
-# --- NEW: Add necessary NLTK imports and setup ---
+# --- Add necessary NLTK imports and setup ---
 import nltk
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
@@ -29,7 +29,7 @@ except LookupError:
     nltk.download('punkt_tab')
     nltk.download('wordnet')
 
-# --- NEW: Internal preprocessing function ---
+# --- Internal preprocessing function (currently unused but kept for potential future use) ---
 # def _preprocess_for_word_count(text):
 #     """A private preprocessing function for the dashboard's use."""
 #     lemmatizer = WordNetLemmatizer()
@@ -43,47 +43,45 @@ except LookupError:
 
 
 def create_sentiment_distribution_plot(df):
-    """Creates an interactive bar chart of sentiment counts."""
-    # This function remains unchanged
+    """Creates an interactive bar chart of sentiment counts with improved aesthetics."""
     sentiment_counts = df['predicted_label'].value_counts().reset_index()
     sentiment_counts.columns = ['Sentiment', 'Count']
     sentiment_counts['Sentiment'] = sentiment_counts['Sentiment'].map({1: 'Happy', 0: 'Not Happy', -1: 'Error'})
-    fig = px.bar(sentiment_counts, x='Sentiment', y='Count',
-                   color='Sentiment', color_discrete_map={'Happy': 'green', 'Not Happy': 'red', 'Error': 'grey'},
-                   title="Count of Happy vs. Not Happy Reviews")
+    
+    fig = px.bar(sentiment_counts, 
+                 x='Sentiment', 
+                 y='Count',
+                 color='Sentiment', 
+                 color_discrete_map={'Happy': 'mediumseagreen', 'Not Happy': 'indianred', 'Error': 'lightgrey'},
+                 title="Sentiment Distribution of Reviews",
+                 text_auto=True,  # Display count on bars
+                 template='plotly_white'
+                )
+    
+    fig.update_layout(
+        title_x=0.5, # Center the title
+        xaxis_title=None,
+        yaxis_title="Number of Reviews",
+        showlegend=False,
+        bargap=0.2
+    )
+    
+    fig.update_traces(
+        marker_line_width=1.5, 
+        marker_line_color="black",
+        opacity=0.8,
+        marker_cornerradius=8
+    )
     return fig
 
-# # --- UPDATED: create_common_words_plot function ---
+# --- create_common_words_plot function (currently unused) ---
 # def create_common_words_plot(df, sentiment_label, n=15):
 #     """Creates an interactive bar chart of the most common words for a given sentiment."""
-#     sentiment_map = {1: 'Happy', 0: 'Not Happy'}
-#     color_map = {1: 'green', 0: 'red'}
-    
-#     corpus = df[df['predicted_label'] == sentiment_label]['Description']
-#     if corpus.empty:
-#         return px.bar(title=f"No '{sentiment_map[sentiment_label]}' reviews to analyze")
-
-#     # Use the new internal preprocessing function
-#     all_text = " ".join(str(text) for text in corpus)
-#     processed_text = _preprocess_for_word_count(all_text)
-    
-#     words = processed_text.split()
-#     if not words:
-#         return px.bar(title=f"No common words found for '{sentiment_map[sentiment_label]}' reviews")
-
-#     word_counts = Counter(words)
-#     top_words = pd.DataFrame(word_counts.most_common(n), columns=['Word', 'Count'])
-    
-#     fig = px.bar(top_words, x='Count', y='Word', orientation='h',
-#                    title=f"Top Words in {sentiment_map[sentiment_label]} Reviews",
-#                    color_discrete_sequence=[color_map[sentiment_label]])
-#     fig.update_yaxes(autorange="reversed")
-#     return fig
+#     # ... (function logic)
 
 
 def create_time_series_plot(df):
-    """Creates an interactive time-series plot of sentiment counts per day."""
-    # This function remains unchanged
+    """Creates an interactive time-series plot of sentiment counts per day with improved aesthetics."""
     if df.empty or 'timestamp' not in df.columns or df['timestamp'].isnull().all():
         return None
 
@@ -96,11 +94,26 @@ def create_time_series_plot(df):
     df['Sentiment'] = df['predicted_label'].map({1: 'Happy', 0: 'Not Happy'})
     daily_counts = df.groupby(['date', 'Sentiment']).size().reset_index(name='Count')
 
-    fig = px.line(daily_counts, x='date', y='Count', color='Sentiment',
-                  title="Daily Sentiment Trend (All Reviews)",
+    fig = px.line(daily_counts, 
+                  x='date', 
+                  y='Count', 
+                  color='Sentiment',
+                  title="Daily Sentiment Trend",
                   labels={'date': 'Date', 'Count': 'Number of Reviews'},
                   color_discrete_map={'Happy': 'mediumseagreen', 'Not Happy': 'indianred'},
-                  markers=True)
+                  markers=True,
+                  template='plotly_white'
+                 )
     
-    fig.update_layout(xaxis_title="Date", yaxis_title="Number of Reviews")
+    fig.update_layout(
+        title_x=0.5, # Center the title
+        xaxis_title="Date", 
+        yaxis_title="Number of Reviews",
+        legend_title_text=None,
+        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
+        xaxis=dict(rangeslider=dict(visible=True), type="date") # Add a range slider
+    )
+    
+    fig.update_traces(line=dict(width=2.5))
+    
     return fig
