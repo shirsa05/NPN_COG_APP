@@ -2,7 +2,7 @@ import requests
 import streamlit as st
 
 # IMPORTANT: Replace this placeholder with the actual URL from your Railway deployment.
-API_URL = "https://ml-sentimentanalysis-production.up.railway.app/predict"
+API_URL = "https://npn-cognizant-hackathon.onrender.com/predict"
 API_URL_2 = "https://hotel-review-analyzer.onrender.com/analyze"
 
 def predict_sentiment_api(review_text: str):
